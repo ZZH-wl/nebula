@@ -5,9 +5,11 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/config"
 	"github.com/micro/go-micro/config/source/file"
+	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/etcd"
+	"github.com/micro/go-plugins/registry/etcdv3"
 )
 
 var Conf = config.NewConfig()
@@ -19,7 +21,7 @@ func loadConfig(cancel func()) (err error) {
 		log.Fatalf("[loadConfig] load error，%s", err)
 		return err
 	}
-	configAddress := Conf.Get("configAddress").String("unknown")
+	configAddr := Conf.Get("configAddr").String("unknown")
 	cluster := Conf.Get("cluster").String("unknown")
 	namespace := Conf.Get("namespace").String("unknown")
 	system := Conf.Get("system").String("unknown")
@@ -29,11 +31,11 @@ func loadConfig(cancel func()) (err error) {
 	if appId != "" {
 		prefix = prefix + "/" + appId
 	}
-	log.Logf("[loadConfig] configAddress: %s", configAddress)
+	log.Logf("[loadConfig] configAddr: %s", configAddr)
 	log.Logf("[loadConfig] configPrefix: %s", prefix)
 	etcdSource := etcd.NewSource(
 		// optionally specify etcd address; default to localhost:8500
-		etcd.WithAddress(configAddress),
+		etcd.WithAddress(configAddr),
 		// optionally specify prefix; defaults to /micro/conf
 		//etcd.WithPrefix("/nebula/nebula-core"),
 		//etcd.WithPrefix("/micro/conf/"),
@@ -84,16 +86,19 @@ func loadConfig(cancel func()) (err error) {
 
 func Run(f func(service micro.Service)) {
 	for {
+		log.Log("[service] starting service")
+
 		var ctx, cancel = context.WithCancel(context.Background())
 
 		if err := loadConfig(cancel); err != nil {
 			log.Fatal(err)
 		}
-		//go func() {
-		//	<-time.After(time.Second * 5)
-		//	log.Logf("Shutdown example: shutting down service")
-		//	cancel()
-		//}()
+
+		reg := etcdv3.NewRegistry(func(op *registry.Options) {
+			//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
+			op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
+		})
+
 		service := micro.NewService()
 
 		f(service)
@@ -101,17 +106,19 @@ func Run(f func(service micro.Service)) {
 
 		service.Init(
 			micro.Context(ctx),
+			micro.Registry(reg),
 		)
-
+		//graceful shutdown
 		if err := service.Server().Init(
 			server.Wait(nil),
 		); err != nil {
 			log.Fatal(err)
 		}
 
+		//service start
 		if err := service.Run(); err != nil {
 			log.Fatal(err)
 		}
-		log.Log("[service] restart service")
+		log.Log("[service] ending service")
 	}
 }

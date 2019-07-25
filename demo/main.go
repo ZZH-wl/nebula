@@ -7,6 +7,9 @@ import (
 
 func main() {
 	nebula.Run(func(service micro.Service) {
-		service.String()
+		service.Init(
+			micro.Name("nebula.core.srv.hello"),
+			micro.Version("latest"),
+		)
 	})
 }

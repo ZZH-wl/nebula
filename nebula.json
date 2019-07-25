@@ -4,7 +4,9 @@
   "system": "nebula-core",
   "version": "v0.1",
   "appId": "",
-  "configAddress": "localhost:2379",
+  "configAddr": "localhost:2379",
+  "registryAddr": ["localhost:2379"],
   "config": {
+    "name": "999"
   }
 }
