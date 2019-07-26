@@ -27,6 +27,6 @@ func main() {
 #### Config
 
 ```
-	version := Conf.Get("version").String("unknown")
+version := Conf.Get("version").String("unknown")
 ```
 
