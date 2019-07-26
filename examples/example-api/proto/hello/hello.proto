@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package nebula.core.api.hello;
+
+import "github.com/micro/go-micro/api/proto/api.proto";
+
+service Hello {
+	rpc Call(go.api.Request) returns (go.api.Response) {}
+}
