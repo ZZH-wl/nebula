@@ -1,0 +1,12 @@
+{
+  "cluster": "default",
+  "namespace": "nebula",
+  "system": "nebula-core",
+  "version": "latest",
+  "appId": "",
+  "configAddr": "localhost:2379",
+  "registryAddr": ["localhost:2379"],
+  "config": {
+    "name": "999"
+  }
+}

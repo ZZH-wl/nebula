@@ -1,14 +1,17 @@
 # nebula
 
-#### Install
-> go get -u github.com/Wall-js/nebula
+## Install
+> go get github.com/Wall-js/nebula
 
-#### Demo
+## Demo
+
+#### Starting
 ```
 func main() {
     nebula.Run(func(service micro.Service) {
         service.Init(
             micro.Name("nebula.core.srv.hello"),
+            micro.Version("latest"),
         )
     })
     
@@ -20,3 +23,6 @@ func main() {
     micro.RegisterSubscriber("nebula.core.srv.hello", service.Server(), subscriber.Handler)
 }
 ```
+
+#### Config
+
