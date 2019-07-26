@@ -10,6 +10,7 @@ import (
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
+	"time"
 )
 
 var Conf = config.NewConfig()
@@ -93,6 +94,7 @@ func Run(f func(service micro.Service)) {
 		if err := loadConfig(cancel); err != nil {
 			log.Fatal(err)
 		}
+		version := Conf.Get("version").String("unknown")
 
 		reg := etcdv3.NewRegistry(func(op *registry.Options) {
 			//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
@@ -102,11 +104,13 @@ func Run(f func(service micro.Service)) {
 		service := micro.NewService()
 
 		f(service)
-		log.Log("[service] Register service")
 
 		service.Init(
 			micro.Context(ctx),
 			micro.Registry(reg),
+			micro.Version(version),
+			micro.RegisterTTL(time.Second*30),
+			micro.RegisterInterval(time.Second*15),
 		)
 		//graceful shutdown
 		if err := service.Server().Init(
@@ -115,10 +119,14 @@ func Run(f func(service micro.Service)) {
 			log.Fatal(err)
 		}
 
+		log.Log("[service] service options: %s", service.Options())
+		log.Log("[service] server options: %s", service.Server().Options())
+
 		//service start
 		if err := service.Run(); err != nil {
 			log.Fatal(err)
 		}
-		log.Log("[service] ending service")
+		log.Log("[service] ending service: %s", service.String())
+
 	}
 }

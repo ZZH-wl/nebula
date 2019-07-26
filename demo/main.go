@@ -9,7 +9,6 @@ func main() {
 	nebula.Run(func(service micro.Service) {
 		service.Init(
 			micro.Name("nebula.core.srv.hello"),
-			micro.Version("latest"),
 		)
 	})
 }
