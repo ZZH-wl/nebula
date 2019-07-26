@@ -12,7 +12,6 @@ func main() {
 	nebula.Run(func(service micro.Service) {
 		service.Init(
 			micro.Name("nebula.core.srv.hello"),
-			micro.Version("latest"),
 		)
 		// Register Handler
 		hello.RegisterHelloHandler(service.Server(), new(handler.Hello))
