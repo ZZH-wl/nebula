@@ -10,12 +10,15 @@ import (
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 var (
 	Conf    = config.NewConfig()
-	Service micro.Service
+	Service = micro.NewService()
 )
 
 func loadConfig(cancel func()) (err error) {
@@ -88,48 +91,57 @@ func loadConfig(cancel func()) (err error) {
 	return
 }
 
+func Init() {
+	var ctx, cancel = context.WithCancel(context.Background())
+
+	if err := loadConfig(cancel); err != nil {
+		log.Fatal(err)
+	}
+	version := Conf.Get("version").String("unknown")
+
+	reg := etcdv3.NewRegistry(func(op *registry.Options) {
+		//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
+		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
+	})
+
+	Service.Init(
+		micro.Context(ctx),
+		micro.Registry(reg),
+		micro.Version(version),
+		micro.RegisterTTL(time.Second*30),
+		micro.RegisterInterval(time.Second*15),
+	)
+}
+
 func Run(f func(service micro.Service)) micro.Service {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	f(Service)
+
 	for {
-		log.Log("[service] starting service")
-
-		var ctx, cancel = context.WithCancel(context.Background())
-
-		if err := loadConfig(cancel); err != nil {
-			log.Fatal(err)
-		}
-		version := Conf.Get("version").String("unknown")
-
-		reg := etcdv3.NewRegistry(func(op *registry.Options) {
-			//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
-			op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
-		})
-
-		Service = micro.NewService()
-
-		f(Service)
-
-		Service.Init(
-			micro.Context(ctx),
-			micro.Registry(reg),
-			micro.Version(version),
-			micro.RegisterTTL(time.Second*30),
-			micro.RegisterInterval(time.Second*15),
-		)
+		log.Log("[service] init service")
+		Init()
 		//graceful shutdown
 		if err := Service.Server().Init(
 			server.Wait(nil),
 		); err != nil {
 			log.Fatal(err)
 		}
-
-		log.Log("[service] service options: %s", Service.Options())
-		log.Log("[service] server options: %s", Service.Server().Options())
-
+		log.Log("[service] service options: ", Service.Options())
+		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
 		if err := Service.Run(); err != nil {
 			log.Fatal(err)
 		}
-		log.Log("[service] ending service: %s", Service.String())
 
+		select {
+		// wait on kill signal
+		case <-ch:
+			log.Log("[service] ending service: ", Service.Server().String())
+			return nil
+		// wait on context cancel
+		default:
+			log.Log("[service] restart service: ", Service.Server().String())
+		}
 	}
 }
