@@ -13,7 +13,10 @@ import (
 	"time"
 )
 
-var Conf = config.NewConfig()
+var (
+	Conf    = config.NewConfig()
+	Service micro.Service
+)
 
 func loadConfig(cancel func()) (err error) {
 	if err := Conf.Load(file.NewSource(
@@ -85,7 +88,7 @@ func loadConfig(cancel func()) (err error) {
 	return
 }
 
-func Run(f func(service micro.Service)) {
+func Run(f func(service micro.Service)) micro.Service {
 	for {
 		log.Log("[service] starting service")
 
@@ -101,11 +104,11 @@ func Run(f func(service micro.Service)) {
 			op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
 		})
 
-		service := micro.NewService()
+		Service = micro.NewService()
 
-		f(service)
+		f(Service)
 
-		service.Init(
+		Service.Init(
 			micro.Context(ctx),
 			micro.Registry(reg),
 			micro.Version(version),
@@ -113,20 +116,20 @@ func Run(f func(service micro.Service)) {
 			micro.RegisterInterval(time.Second*15),
 		)
 		//graceful shutdown
-		if err := service.Server().Init(
+		if err := Service.Server().Init(
 			server.Wait(nil),
 		); err != nil {
 			log.Fatal(err)
 		}
 
-		log.Log("[service] service options: %s", service.Options())
-		log.Log("[service] server options: %s", service.Server().Options())
+		log.Log("[service] service options: %s", Service.Options())
+		log.Log("[service] server options: %s", Service.Server().Options())
 
 		//service start
-		if err := service.Run(); err != nil {
+		if err := Service.Run(); err != nil {
 			log.Fatal(err)
 		}
-		log.Log("[service] ending service: %s", service.String())
+		log.Log("[service] ending service: %s", Service.String())
 
 	}
 }
