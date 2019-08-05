@@ -7,21 +7,14 @@
 
 #### Starting
 ```
-func main() {
-    nebula.Run(func(service micro.Service) {
-        service.Init(
-            micro.Name("nebula.core.srv.hello"),
-            micro.Version("latest"),
-        )
-    })
-    
-    // Register Handler
-    hello.RegisterHelloHandler(service.Server(), new(handler.Hello))
-    // Register Struct as Subscriber
-    micro.RegisterSubscriber("nebula.core.srv.hello", service.Server(), new(subscriber.Hello))
-    // Register Function as Subscriber
-    micro.RegisterSubscriber("nebula.core.srv.hello", service.Server(), subscriber.Handler)
-}
+	nebula.Service.Init(
+		micro.Name("nebula.core.srv.hello"),
+	)
+	hello.RegisterHelloHandler(nebula.Service.Server(), new(handler.Hello))
+	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), new(subscriber.Hello))
+	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), subscriber.Handler)
+
+	nebula.Run()
 ```
 
 #### Config
@@ -30,3 +23,15 @@ func main() {
 version := nebula.Conf.Get("version").String("unknown")
 ```
 
+#### Web
+```
+	nebula.Service.Init(
+		micro.Name("nebula.core.srv.hello"),
+	)
+	hello.RegisterHelloHandler(nebula.Service.Server(), new(handler.Hello))
+	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), new(subscriber.Hello))
+	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), subscriber.Handler)
+
+	nebula.Run()
+```
+> micro api --handler=http

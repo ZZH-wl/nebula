@@ -8,6 +8,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/util/log"
+	"github.com/micro/go-micro/web"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
 	"os"
@@ -19,7 +20,13 @@ import (
 var (
 	Conf    = config.NewConfig()
 	Service = micro.NewService()
+	Web     = web.NewService()
 )
+
+func init() {
+	Init()
+	InitWeb()
+}
 
 func loadConfig(cancel func()) (err error) {
 	if err := Conf.Load(file.NewSource(
@@ -38,8 +45,8 @@ func loadConfig(cancel func()) (err error) {
 	if appId != "" {
 		prefix = prefix + "/" + appId
 	}
-	log.Logf("[loadConfig] configAddr: %s", configAddr)
-	log.Logf("[loadConfig] configPrefix: %s", prefix)
+	//log.Logf("[loadConfig] configAddr: %s", configAddr)
+	//log.Logf("[loadConfig] configPrefix: %s", prefix)
 	etcdSource := etcd.NewSource(
 		// optionally specify etcd address; default to localhost:8500
 		etcd.WithAddress(configAddr),
@@ -93,7 +100,6 @@ func loadConfig(cancel func()) (err error) {
 
 func Init() {
 	var ctx, cancel = context.WithCancel(context.Background())
-
 	if err := loadConfig(cancel); err != nil {
 		log.Fatal(err)
 	}
@@ -111,29 +117,80 @@ func Init() {
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 	)
+	//graceful shutdown
+	if err := Service.Server().Init(
+		server.Wait(nil),
+	); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func Run(f func(service micro.Service)) micro.Service {
+func Run() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-	f(Service)
 
 	for {
 		log.Log("[service] init service")
-		Init()
-		//graceful shutdown
-		if err := Service.Server().Init(
-			server.Wait(nil),
-		); err != nil {
-			log.Fatal(err)
-		}
 		log.Log("[service] service options: ", Service.Options())
 		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
 		if err := Service.Run(); err != nil {
 			log.Fatal(err)
 		}
+		select {
+		// wait on kill signal
+		case <-ch:
+			log.Log("[service] ending service: ", Service.Server().String())
+			return
+		// wait on context cancel
+		default:
+			log.Log("[service] restart service: ", Service.Server().String())
+			Init()
+		}
+	}
+}
 
+func InitWeb() {
+	var ctx, cancel = context.WithCancel(context.Background())
+	if err := loadConfig(cancel); err != nil {
+		log.Fatal(err)
+	}
+	version := Conf.Get("version").String("unknown")
+
+	reg := etcdv3.NewRegistry(func(op *registry.Options) {
+		//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
+		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
+	})
+
+	Web.Init(
+		web.Context(ctx),
+		web.Registry(reg),
+		web.Version(version),
+		web.RegisterTTL(time.Second*30),
+		web.RegisterInterval(time.Second*15),
+	)
+
+	//graceful shutdown
+	//if err := WebService.Server().Init(
+	//	server.Wait(nil),
+	//); err != nil {
+	//	log.Fatal(err)
+	//}
+}
+
+func RunWeb() micro.Service {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	for {
+		log.Log("[service] init service")
+
+		log.Log("[service] service options: ", Service.Options())
+		log.Log("[service] server options: ", Service.Server().Options())
+		//service start
+		if err := Web.Run(); err != nil {
+			log.Fatal(err)
+		}
 		select {
 		// wait on kill signal
 		case <-ch:
@@ -142,6 +199,7 @@ func Run(f func(service micro.Service)) micro.Service {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
+			Init()
 		}
 	}
 }
