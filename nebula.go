@@ -56,28 +56,6 @@ func loadConfig(cancel func()) (err error) {
 		// optionally strip the provided prefix from the keys, defaults to false
 		etcd.StripPrefix(true),
 	)
-
-	if err := Conf.Load(etcdSource); err != nil {
-		log.Log("[loadConfig] load error，%s", err)
-		//return err
-	}
-
-	go func() {
-		// watch etcd changes
-		watcher, err := etcdSource.Watch()
-		if err != nil {
-			log.Fatalf("[loadConfig] start watching etcd error，%s", err)
-			return
-		}
-		v, err := watcher.Next()
-		if err != nil {
-			log.Fatalf("[loadConfig] watch etcd error，%s", err)
-			return
-		}
-		log.Logf("[loadConfig] etcd change， %s", string(v.Data))
-		cancel()
-	}()
-
 	go func() {
 		// watch changes
 		watcher, err := Conf.Watch()
@@ -92,6 +70,27 @@ func loadConfig(cancel func()) (err error) {
 		}
 
 		log.Logf("[loadConfig] file change， %s", string(v.Bytes()))
+		cancel()
+	}()
+
+	if err := Conf.Load(etcdSource); err != nil {
+		log.Log("[loadConfig] load error，%s", err)
+		//return err
+		return
+	}
+	go func() {
+		// watch etcd changes
+		watcher, err := etcdSource.Watch()
+		if err != nil {
+			log.Fatalf("[loadConfig] start watching etcd error，%s", err)
+			return
+		}
+		v, err := watcher.Next()
+		if err != nil {
+			log.Fatalf("[loadConfig] watch etcd error，%s", err)
+			return
+		}
+		log.Logf("[loadConfig] etcd change， %s", string(v.Data))
 		cancel()
 	}()
 	return
