@@ -21,11 +21,11 @@ var (
 	Conf    = config.NewConfig()
 	Service = micro.NewService()
 	Web     = web.NewService()
+	Broker  = micro.Broker()
 )
 
 func init() {
 	Init()
-	InitWeb()
 }
 
 func loadConfig(cancel func()) (err error) {
@@ -110,6 +110,7 @@ func Init() {
 		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
 	})
 
+	// config service
 	Service.Init(
 		micro.Context(ctx),
 		micro.Registry(reg),
@@ -117,6 +118,17 @@ func Init() {
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*15),
 	)
+
+	if err := Web.Init(
+		web.Context(ctx),
+		web.Registry(reg),
+		web.Version(version),
+		web.RegisterTTL(time.Second*30),
+		web.RegisterInterval(time.Second*15),
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	//graceful shutdown
 	if err := Service.Server().Init(
 		server.Wait(nil),
@@ -150,41 +162,12 @@ func Run() {
 	}
 }
 
-func InitWeb() {
-	var ctx, cancel = context.WithCancel(context.Background())
-	if err := loadConfig(cancel); err != nil {
-		log.Fatal(err)
-	}
-	version := Conf.Get("version").String("unknown")
-
-	reg := etcdv3.NewRegistry(func(op *registry.Options) {
-		//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
-		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
-	})
-
-	Web.Init(
-		web.Context(ctx),
-		web.Registry(reg),
-		web.Version(version),
-		web.RegisterTTL(time.Second*30),
-		web.RegisterInterval(time.Second*15),
-	)
-
-	//graceful shutdown
-	//if err := WebService.Server().Init(
-	//	server.Wait(nil),
-	//); err != nil {
-	//	log.Fatal(err)
-	//}
-}
-
-func RunWeb() micro.Service {
+func RunWeb() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	for {
 		log.Log("[service] init service")
-
 		log.Log("[service] service options: ", Service.Options())
 		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
@@ -195,7 +178,7 @@ func RunWeb() micro.Service {
 		// wait on kill signal
 		case <-ch:
 			log.Log("[service] ending service: ", Service.Server().String())
-			return nil
+			return
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())

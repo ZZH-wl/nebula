@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/Wall-js/nebula"
 	"github.com/gin-gonic/gin"
-	"github.com/micro/go-micro/web"
+	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/server"
+	httpServer "github.com/micro/go-plugins/server/http"
 	"log"
 )
 
@@ -17,18 +19,37 @@ func (s *Say) Anything(c *gin.Context) {
 }
 
 func main() {
-	nebula.Web.Init(
-		web.Name("go.micro.api.greeter"),
+	srv := httpServer.NewServer(
+		server.Name("helloworld"),
 	)
-
 	router := gin.New()
 	say := new(Say)
 	router.GET("/greeter", say.Anything)
 
-	// Register Handler
 	nebula.Web.Handle("/", router)
-	nebula.RunWeb()
+
+	nebula.Service.Init(
+		micro.Name("nebula.core.greeter"),
+		micro.Server(srv),
+	)
+
+	// Register Handler
+	nebula.Run()
 }
+
+//func main() {
+//	nebula.Web.Init(
+//		web.Name("nebula.core.greeter"),
+//	)
+//
+//	router := gin.New()
+//	say := new(Say)
+//	router.GET("/greeter", say.Anything)
+//
+//	// Register Handler
+//	nebula.Web.Handle("/", router)
+//	nebula.RunWeb()
+//}
 
 //func main() {
 //
