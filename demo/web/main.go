@@ -34,7 +34,7 @@ func main() {
 	)
 
 	// Register Handler
-	nebula.Run()
+	nebula.RunWeb()
 }
 
 //func main() {

@@ -8,7 +8,7 @@
 ## 服务配置规范
 ####节点命名
 ```
-/集群名/命名空间/类型(srv,api,web)/系统/版本(/id)(括号部分可不使用)
+/集群名/命名空间/类型(srv,api,web,evt)/系统/版本(/id)(括号部分可不使用)
 
 /default/nebula/srv/nebula-core/v0.1(/10086)
 
@@ -16,7 +16,10 @@
 ```
 
 #### Type
-web,api,srv,evt
+```
+web,api,srv,fnc
+```
+
 #### Starting
 ```
 	nebula.Service.Init(

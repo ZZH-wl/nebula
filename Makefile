@@ -4,7 +4,7 @@ GOPATH:=$(shell go env GOPATH)
 
 .PHONY: proto
 proto:
-	./proto/gen.sh
+	script/gen.sh
 
 .PHONY: build
 build: proto
