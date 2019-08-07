@@ -58,8 +58,8 @@ func loadConfig(cancel func()) (err error) {
 	)
 
 	if err := Conf.Load(etcdSource); err != nil {
-		log.Fatalf("[loadConfig] load error，%s", err)
-		return err
+		log.Log("[loadConfig] load error，%s", err)
+		//return err
 	}
 
 	go func() {
