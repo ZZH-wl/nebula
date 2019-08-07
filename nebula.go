@@ -76,7 +76,7 @@ func loadConfig(cancel func()) (err error) {
 	if err := Conf.Load(etcdSource); err != nil {
 		log.Log("[loadConfig] load error，%s", err)
 		//return err
-		return
+		return nil
 	}
 	go func() {
 		// watch etcd changes
