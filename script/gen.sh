@@ -7,9 +7,9 @@ do
     if [ ! -d "../grpc/service/${file%.*}" ]; then
       mkdir -p ../grpc/service/${file%.*}
     fi
-    if [ ! -d "../grpc/gateway/${file%.*}" ]; then
-      mkdir -p ../grpc/gateway/${file%.*}
-    fi
+#    if [ ! -d "../grpc/gateway/${file%.*}" ]; then
+#      mkdir -p ../grpc/gateway/${file%.*}
+#    fi
     #if [ ! -d "../web/grpc/${file%.*}" ]; then
     #  mkdir -p ../web/grpc/${file%.*}
     #fi
@@ -24,11 +24,11 @@ do
       -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
       --go_out=plugins=grpc:$OUT_GO_DIR \
       --micro_out=$OUT_GO_DIR
-    protoc $file -I/usr/local/include -I. \
-      -I$GOPATH/src \
-      -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-      --go_out=plugins=grpc:$OUT_GATEWAY_DIR \
-      --grpc-gateway_out=logtostderr=true:$OUT_GATEWAY_DIR
+#    protoc $file -I/usr/local/include -I. \
+#      -I$GOPATH/src \
+#      -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+#      --go_out=plugins=grpc:$OUT_GATEWAY_DIR \
+#      --grpc-gateway_out=logtostderr=true:$OUT_GATEWAY_DIR
     echo "generate $file"
   fi
 done
