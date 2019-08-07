@@ -21,7 +21,6 @@ var (
 	Conf    = config.NewConfig()
 	Service = micro.NewService()
 	Web     = web.NewService()
-	Broker  = micro.Broker()
 )
 
 func init() {

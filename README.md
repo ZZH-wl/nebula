@@ -5,6 +5,18 @@
 
 ## Demo
 
+## 服务配置规范
+####节点命名
+```
+/集群名/命名空间/类型(srv,api,web)/系统/版本(/id)(括号部分可不使用)
+
+/default/nebula/srv/nebula-core/v0.1(/10086)
+
+/cluster/namespace/type/system/version(/appId)
+```
+
+#### Type
+web,api,srv,evt
 #### Starting
 ```
 	nebula.Service.Init(
