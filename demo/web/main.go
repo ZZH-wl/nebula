@@ -3,53 +3,52 @@ package main
 import (
 	"github.com/Wall-js/nebula"
 	"github.com/gin-gonic/gin"
-	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/server"
-	httpServer "github.com/micro/go-plugins/server/http"
-	"log"
+	"github.com/micro/go-micro/util/log"
+	"github.com/micro/go-micro/web"
 )
 
 type Say struct{}
 
 func (s *Say) Anything(c *gin.Context) {
-	log.Print("Received Say.Anything API request")
+	log.Log("Received Say.Anything API request")
 	c.JSON(200, map[string]string{
 		"message": "Hi, this is the Greeter API",
 	})
 }
 
-func main() {
-	srv := httpServer.NewServer(
-		server.Name("helloworld"),
-	)
-	router := gin.New()
-	say := new(Say)
-	router.GET("/greeter", say.Anything)
-
-	nebula.Web.Handle("/", router)
-
-	nebula.Service.Init(
-		micro.Name("nebula.core.greeter"),
-		micro.Server(srv),
-	)
-
-	// Register Handler
-	nebula.RunWeb()
-}
-
 //func main() {
-//	nebula.Web.Init(
-//		web.Name("nebula.core.greeter"),
+//	srv := httpServer.NewServer(
+//		server.Name("helloworld"),
 //	)
-//
 //	router := gin.New()
 //	say := new(Say)
 //	router.GET("/greeter", say.Anything)
 //
-//	// Register Handler
 //	nebula.Web.Handle("/", router)
+//
+//	nebula.Service.Init(
+//		micro.Name("nebula.core.greeter"),
+//		micro.Server(srv),
+//	)
+//
+//	// Register Handler
 //	nebula.RunWeb()
 //}
+
+func main() {
+	if err := nebula.Web.Init(
+		web.Name("nebula.core.greeter"),
+	); err != nil {
+		log.Log(err)
+	}
+	router := gin.New()
+	say := new(Say)
+	router.GET("/greeter", say.Anything)
+
+	// Register Handler
+	nebula.Web.Handle("/", router)
+	nebula.RunWeb()
+}
 
 //func main() {
 //

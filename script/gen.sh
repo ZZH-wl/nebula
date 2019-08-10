@@ -21,7 +21,7 @@ do
     protoc $file -I. \
       -I/usr/local/include \
       -I$GOPATH/src \
-      -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+      #-I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
       --go_out=plugins=grpc:$OUT_GO_DIR \
       --micro_out=$OUT_GO_DIR
 #    protoc $file -I/usr/local/include -I. \

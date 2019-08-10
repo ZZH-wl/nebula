@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/web"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
+
 	"os"
 	"os/signal"
 	"syscall"

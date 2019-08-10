@@ -40,13 +40,18 @@ version := nebula.Conf.Get("version").String("unknown")
 
 #### Web
 ```
-	nebula.Service.Init(
-		micro.Name("nebula.core.srv.hello"),
+func main() {
+	nebula.Web.Init(
+		web.Name("nebula.core.greeter"),
 	)
-	hello.RegisterHelloHandler(nebula.Service.Server(), new(handler.Hello))
-	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), new(subscriber.Hello))
-	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), subscriber.Handler)
 
-	nebula.Run()
+	router := gin.New()
+	say := new(Say)
+	router.GET("/greeter", say.Anything)
+
+	// Register Handler
+	nebula.Web.Handle("/", router)
+	nebula.RunWeb()
+}
 ```
 > micro api --handler=http
