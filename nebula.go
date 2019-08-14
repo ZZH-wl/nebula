@@ -29,8 +29,9 @@ func init() {
 }
 
 func loadConfig(cancel func()) (err error) {
+	workDir, _ := os.Getwd()
 	if err := Conf.Load(file.NewSource(
-		file.WithPath("./nebula.json"),
+		file.WithPath(workDir + "/nebula.json"),
 	)); err != nil {
 		log.Fatalf("[loadConfig] load error，%s", err)
 		return err
@@ -98,6 +99,7 @@ func loadConfig(cancel func()) (err error) {
 }
 
 func Init() {
+
 	var ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(cancel); err != nil {
 		log.Fatal(err)
