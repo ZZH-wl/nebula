@@ -29,9 +29,16 @@ func init() {
 }
 
 func loadConfig(cancel func()) (err error) {
+	confPath := "./nebula.json"
+
+	// try to use config in workDir
 	workDir, _ := os.Getwd()
+	if _, err = os.Stat(workDir + "/nebula.json"); err == nil {
+		confPath = workDir + "/nebula.json"
+	}
+
 	if err := Conf.Load(file.NewSource(
-		file.WithPath(workDir + "/nebula.json"),
+		file.WithPath(confPath),
 	)); err != nil {
 		log.Fatalf("[loadConfig] load error，%s", err)
 		return err

@@ -1,6 +1,6 @@
 FROM alpine
 ADD nebula /nebula
-ADD nebula.json /runtime/nebula.json
+ADD nebula.json /nebula.json
 VOLUME ["/runtime"]
 WORKDIR /runtime
 ENTRYPOINT [ "/nebula" ]
