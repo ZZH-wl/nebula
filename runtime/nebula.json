@@ -1,0 +1,14 @@
+{
+  "configAddr": "localhost:2379",
+  "registryAddr": ["localhost:2379"],
+  "cluster": "default",
+  "namespace": "nebula",
+  "type": "srv",
+  "system": "nebula-core",
+  "version": "latest",
+  "appId": "",
+  "config": {
+    "name": "999",
+    "brokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com"
+  }
+}
