@@ -18,3 +18,7 @@ test:
 .PHONY: docker
 docker:
 	docker build . -t nebula:latest
+
+.PHONY: run
+run:
+	docker run --name nebula -d -p 8080:8080 -v /Users/zuoyi-macpro/Data/nebula/runtime:/runtime nebula
