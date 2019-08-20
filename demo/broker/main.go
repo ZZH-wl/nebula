@@ -1,7 +1,8 @@
-package broker
+package main
 
 import (
 	"fmt"
+	"github.com/Wall-js/nebula"
 	"github.com/micro/go-micro/broker"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 
@@ -21,7 +22,7 @@ func pub() {
 			},
 			Body: []byte(fmt.Sprintf("%d: %s", i, time.Now().String())),
 		}
-		if err := broker.Publish(topic, msg); err != nil {
+		if err := nebula.RabbitBroker.Publish(topic, msg); err != nil {
 			log.Printf("[pub] 发布消息失败： %v", err)
 		} else {
 			fmt.Println("[pub] 发布消息：", string(msg.Body))
@@ -31,7 +32,7 @@ func pub() {
 }
 
 func sub() {
-	_, err := broker.Subscribe(topic, func(p broker.Event) error {
+	_, err := nebula.RabbitBroker.Subscribe(topic, func(p broker.Event) error {
 		fmt.Println("[sub] 订阅 Body: %s, Header: %s", string(p.Message().Body), p.Message().Header)
 		return nil
 	}, broker.Queue("mu.micro.book.topic.queue"))
@@ -41,16 +42,28 @@ func sub() {
 }
 
 func main() {
-
-	if err := broker.Init(); err != nil {
-		log.Fatalf("Broker 初始化错误：%v", err)
-	}
-	if err := broker.Connect(); err != nil {
-		log.Fatalf("Broker 连接错误：%v", err)
-	}
+	nebula.RabbitBrokerInit()
 
 	go pub()
-	//go sub()
-
-	<-time.After(time.Second * 10)
+	go sub()
+	select {}
 }
+
+//<-time.After(time.Second * 10)
+//	select {}
+//}
+//func main() {
+//
+//	if err := broker.Init(); err != nil {
+//		log.Fatalf("Broker 初始化错误：%v", err)
+//	}
+//	if err := broker.Connect(); err != nil {
+//		log.Fatalf("Broker 连接错误：%v", err)
+//	}
+//
+//	go pub()
+//go sub()
+
+//<-time.After(time.Second * 10)
+//	select {}
+//}

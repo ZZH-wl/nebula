@@ -3,15 +3,16 @@ package nebula
 import (
 	"context"
 	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/config"
 	"github.com/micro/go-micro/config/source/file"
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-micro/web"
+	_ "github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,9 +20,10 @@ import (
 )
 
 var (
-	Conf    = config.NewConfig()
-	Service = micro.NewService()
-	Web     = web.NewService()
+	Conf         = config.NewConfig()
+	Service      = micro.NewService()
+	Web          = web.NewService()
+	RabbitBroker = broker.NewBroker()
 )
 
 func init() {
@@ -45,10 +47,11 @@ func loadConfig(cancel func()) (err error) {
 	configAddr := Conf.Get("configAddr").String("unknown")
 	cluster := Conf.Get("cluster").String("unknown")
 	namespace := Conf.Get("namespace").String("unknown")
+	_type := Conf.Get("type").String("unknown")
 	system := Conf.Get("system").String("unknown")
 	version := Conf.Get("version").String("unknown")
 	appId := Conf.Get("appId").String("")
-	prefix := "/" + cluster + "/" + namespace + "/" + system + "/" + version
+	prefix := "/" + cluster + "/" + namespace + "/" + _type + "/" + system + "/" + version
 	if appId != "" {
 		prefix = prefix + "/" + appId
 	}
@@ -192,4 +195,18 @@ func RunWeb() {
 			Init()
 		}
 	}
+}
+
+func RabbitBrokerInit(options ...broker.Option) {
+	rabbitBrokerAddr := Conf.Get("rabbitBrokerAddr").String("")
+	options = append(options, broker.Addrs(rabbitBrokerAddr))
+	if err := RabbitBroker.Init(
+		options...,
+	); err != nil {
+		log.Fatalf("Broker 初始化错误：%v", err)
+	}
+	if err := RabbitBroker.Connect(); err != nil {
+		log.Fatalf("Broker 连接错误：%v", err)
+	}
+
 }
