@@ -3,14 +3,12 @@ package nebula
 import (
 	"context"
 	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/config"
 	"github.com/micro/go-micro/config/source/file"
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-micro/web"
-	_ "github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/micro/go-plugins/config/source/etcd"
 	"github.com/micro/go-plugins/registry/etcdv3"
 	"os"
@@ -20,10 +18,9 @@ import (
 )
 
 var (
-	Conf         = config.NewConfig()
-	Service      = micro.NewService()
-	Web          = web.NewService()
-	RabbitBroker = broker.NewBroker()
+	Conf    = config.NewConfig()
+	Service = micro.NewService()
+	Web     = web.NewService()
 )
 
 func init() {
@@ -147,6 +144,10 @@ func Init() {
 	}
 }
 
+func NewService() micro.Service {
+	return micro.NewService()
+}
+
 func Run() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
@@ -195,18 +196,4 @@ func RunWeb() {
 			Init()
 		}
 	}
-}
-
-func RabbitBrokerInit(options ...broker.Option) {
-	rabbitBrokerAddr := Conf.Get("rabbitBrokerAddr").String("")
-	options = append(options, broker.Addrs(rabbitBrokerAddr))
-	if err := RabbitBroker.Init(
-		options...,
-	); err != nil {
-		log.Fatalf("Broker 初始化错误：%v", err)
-	}
-	if err := RabbitBroker.Connect(); err != nil {
-		log.Fatalf("Broker 连接错误：%v", err)
-	}
-
 }

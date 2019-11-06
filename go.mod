@@ -13,5 +13,6 @@ require (
 	github.com/lucas-clemente/quic-go v0.11.2 // indirect
 	github.com/micro/go-micro v1.8.1
 	github.com/micro/go-plugins v1.1.1
+	github.com/satori/go.uuid v1.2.0
 	google.golang.org/grpc v1.22.0
 )

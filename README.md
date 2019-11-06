@@ -17,7 +17,7 @@
 
 #### Type
 ```
-web,api,srv,fnc
+web,api,srv,evt
 ```
 
 #### Starting
