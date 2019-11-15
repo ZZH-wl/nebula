@@ -32,12 +32,12 @@ func pub() {
 }
 
 func sub() {
-	//_, err := nebula.RabbitBroker.Subscribe(topic, func(p broker.Event) error {
-	_, err := nebula.RabbitBroker.Subscribe("sample", func(p broker.Event) error {
+	_, err := nebula.RabbitBroker.Subscribe(topic, func(p broker.Event) error {
+		//_, err := nebula.RabbitBroker.Subscribe("sample", func(p broker.Event) error {
 		fmt.Printf("[sub] 订阅 Body: %s, Header: %s", string(p.Message().Body), p.Message().Header)
 		return nil
 	},
-	//broker.Queue("mu.micro.book.topic.queue"),
+		broker.Queue("mu.micro.book.topic.queue"),
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -48,7 +48,22 @@ func day() {
 	tick := time.NewTicker(time.Second)
 	i := 0
 	for range tick.C {
-		nebula.Publish(nebula.RabbitBroker, "sample", "test...")
+		nebula.Publish(nebula.RabbitBroker, "sample", []byte("test..."))
+		i++
+	}
+}
+
+func testSub(e broker.Event) error {
+	fmt.Printf("[sub] 订阅 Body: %s, Header: %s \n", string(e.Message().Body), e.Message().Header)
+	return nil
+}
+
+func testPub() {
+	tick := time.NewTicker(time.Second)
+	i := 0
+	for range tick.C {
+		//nebula.Publish(nebula.RabbitBroker, topic, fmt.Sprintf("%s", time.Now().String()))
+		nebula.Publish(nebula.RabbitBroker, topic, []byte("supplierId:66"))
 		i++
 	}
 }
@@ -56,10 +71,11 @@ func day() {
 func main() {
 	nebula.InitRabbitBroker()
 
-	go day()
-	go sub()
-	//go sub()
-	select {}
+	//nebula.Subscribe(nebula.RabbitBroker, topic, testSub)
+	nebula.Subscribe(nebula.RabbitBroker, topic, testSub, broker.Queue("mu.micro.book.topic.queue"))
+	go testPub()
+
+	nebula.Run()
 }
 
 //<-time.After(time.Second * 10)
@@ -76,7 +92,6 @@ func main() {
 //
 //	go pub()
 //go sub()
-
 //<-time.After(time.Second * 10)
 //	select {}
 //}
