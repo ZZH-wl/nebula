@@ -8,11 +8,15 @@ replace (
 )
 
 require (
+	cloud.google.com/go v0.41.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
+	github.com/go-kit/kit v0.9.0 // indirect
 	github.com/golang/protobuf v1.3.2
-	github.com/lucas-clemente/quic-go v0.11.2 // indirect
-	github.com/micro/go-micro v1.8.1
+	github.com/micro/go-micro v1.17.1
 	github.com/micro/go-plugins v1.1.1
 	github.com/satori/go.uuid v1.2.0
-	google.golang.org/grpc v1.22.0
+	golang.org/x/exp v0.0.0-20190627132806-fd42eb6b336f // indirect
+	golang.org/x/image v0.0.0-20190703141733-d6a02ce849c9 // indirect
+	golang.org/x/mobile v0.0.0-20190711165009-e47acb2ca7f9 // indirect
+	google.golang.org/grpc v1.25.1
 )

@@ -2,7 +2,7 @@
 
 ## Install
 > go get github.com/Wall-js/nebula
-
+> export GOPROXY=https://goproxy.io
 ## Demo
 
 ## 服务配置规范
