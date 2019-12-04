@@ -5,10 +5,11 @@
   "cluster": "default",
   "namespace": "nebula",
   "type": "srv",
+  "name": "nebula.test.srv",
   "system": "nebula-core",
   "version": "latest",
   "appId": "",
   "config": {
-    "name": "test"
+    "name": "test1"
   }
 }

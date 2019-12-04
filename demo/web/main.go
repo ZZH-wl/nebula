@@ -4,7 +4,6 @@ import (
 	"github.com/Wall-js/nebula"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro/util/log"
-	"github.com/micro/go-micro/web"
 )
 
 type Say struct{}
@@ -36,18 +35,18 @@ func (s *Say) Anything(c *gin.Context) {
 //}
 
 func main() {
-	if err := nebula.Web.Init(
-		web.Name("nebula.core.greeter"),
-	); err != nil {
-		log.Log(err)
-	}
+	//if err := nebula.Web.Init(
+	//	web.Name("nebula.web.666"),
+	//); err != nil {
+	//	log.Log(err)
+	//}
 	router := gin.New()
 	say := new(Say)
 	router.GET("/greeter", say.Anything)
 
 	// Register Handler
 	nebula.Web.Handle("/", router)
-	nebula.RunWeb()
+	nebula.Run()
 }
 
 //func main() {

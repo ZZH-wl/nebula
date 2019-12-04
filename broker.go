@@ -27,41 +27,41 @@ func NewNsqBroker(opts ...broker.Option) broker.Broker {
 	return nsq.NewBroker(opts...)
 }
 
-func InitRabbitBroker(options ...broker.Option) {
+func InitRabbitBroker(b broker.Broker, options ...broker.Option) {
 	rabbitBrokerAddr := Conf.Get("rabbitBrokerAddr").String("")
 	options = append(options, broker.Addrs(rabbitBrokerAddr))
-	if err := RabbitBroker.Init(
+	if err := b.Init(
 		options...,
 	); err != nil {
 		log.Fatalf("Broker 初始化错误：%v", err)
 	}
-	if err := RabbitBroker.Connect(); err != nil {
+	if err := b.Connect(); err != nil {
 		log.Fatalf("Broker 连接错误：%v", err)
 	}
 }
 
-func InitNatsBroker(options ...broker.Option) {
+func InitNatsBroker(b broker.Broker, options ...broker.Option) {
 	natsBrokerAddr := Conf.Get("natsBrokerAddr").String("")
 	options = append(options, broker.Addrs(natsBrokerAddr))
-	if err := NatsBroker.Init(
+	if err := b.Init(
 		options...,
 	); err != nil {
 		log.Fatalf("Broker 初始化错误：%v", err)
 	}
-	if err := RabbitBroker.Connect(); err != nil {
+	if err := b.Connect(); err != nil {
 		log.Fatalf("Broker 连接错误：%v", err)
 	}
 }
 
-func InitNsqBroker(options ...broker.Option) {
+func InitNsqBroker(b broker.Broker, options ...broker.Option) {
 	nsqBrokerAddr := Conf.Get("nsqBrokerAddr").String("")
 	options = append(options, broker.Addrs(nsqBrokerAddr))
-	if err := NsqBroker.Init(
+	if err := b.Init(
 		options...,
 	); err != nil {
 		log.Fatalf("Broker 初始化错误：%v", err)
 	}
-	if err := RabbitBroker.Connect(); err != nil {
+	if err := b.Connect(); err != nil {
 		log.Fatalf("Broker 连接错误：%v", err)
 	}
 }
