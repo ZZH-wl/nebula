@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	nebulaVersion = "v1.17.2"
+	nebulaVersion = "v1.17.4"
 	Conf          = config.NewConfig()
 	Service       = micro.NewService()
 	Web           = web.NewService()
