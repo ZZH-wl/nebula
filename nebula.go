@@ -18,64 +18,78 @@ import (
 )
 
 var (
-	Conf        = config.NewConfig()
-	Service     = micro.NewService()
-	Web         = web.NewService()
-	serviceName string
-	serviceType string
-	//Service micro.Service
-	//Web     web.Service
+	nebulaVersion = "v1.17.2"
+	Conf          = config.NewConfig()
+	Service       = micro.NewService()
+	Web           = web.NewService()
+	appId         = ""
+	serviceName   = ""
 )
+
+func SetName(name string) {
+	serviceName = name
+	Service.Init(
+		micro.Name(name),
+	)
+	if err := Web.Init(
+		web.Name(name),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+}
 
 func init() {
 	initProcess()
 }
+
 func initProcess() {
 	var ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(cancel); err != nil {
 		log.Fatal(err)
 	}
-	serviceType = Conf.Get("type").String("unknown")
-	serviceName = Conf.Get("name").String("unknown")
-	if serviceType == "srv" {
-		initService(ctx)
-	} else if serviceType == "web" {
-		initWebService(ctx)
-	}
-}
 
-func initService(ctx context.Context) {
+	log.Logf("Nebula process start %s", nebulaVersion)
+	if nebulaVersion != Conf.Get("nebulaVersion").String("unknown") {
+		log.Fatalf("Nebula config version error:%s", Conf.Get("nebulaVersion").String("unknown"))
+	}
+
+	//serviceType = Conf.Get("type").String("unknown")
+	appId = Conf.Get("appId").String("unknown")
 	version := Conf.Get("version").String("unknown")
+
 	reg := etcdv3.NewRegistry(func(op *registry.Options) {
 		//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
 		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
 	})
-	// config service
-	Service.Init(
-		micro.Name(serviceName),
-		micro.Context(ctx),
-		micro.Registry(reg),
-		micro.Version(version),
-		micro.RegisterTTL(time.Second*30),
-		micro.RegisterInterval(time.Second*15),
-	)
+	name := appId
+	if serviceName != "" {
+		name = serviceName
+	}
 	//graceful shutdown
 	if err := Service.Server().Init(
 		server.Wait(nil),
 	); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func initWebService(ctx context.Context) {
-	version := Conf.Get("version").String("unknown")
-	reg := etcdv3.NewRegistry(func(op *registry.Options) {
-		//op.Addrs = []string{"http://192.168.3.34:2379", "http://192.168.3.18:2379", "http://192.168.3.110:2379",}
-		op.Addrs = Conf.Get("registryAddr").StringSlice([]string{"localhost:2379"})
-	})
+	if err := Web.Options().Service.Server().Init(
+		server.Wait(nil),
+	); err != nil {
+		log.Fatal(err)
+	}
 	// config service
+	Service.Init(
+		micro.Name(name),
+		micro.Context(ctx),
+		micro.Registry(reg),
+		micro.Version(version),
+		micro.RegisterTTL(time.Second*30),
+		micro.RegisterInterval(time.Second*15),
+	)
+
 	if err := Web.Init(
-		web.Name(serviceName),
+		//web.MicroService(Service),
+		web.Name(name),
 		web.Context(ctx),
 		web.Registry(reg),
 		web.Version(version),
@@ -84,12 +98,7 @@ func initWebService(ctx context.Context) {
 	); err != nil {
 		log.Fatal(err)
 	}
-	//graceful shutdown
-	if err := Service.Server().Init(
-		server.Wait(nil),
-	); err != nil {
-		log.Fatal(err)
-	}
+
 }
 
 func loadConfig(cancel func()) (err error) {
@@ -176,22 +185,14 @@ func NewService() micro.Service {
 func Run() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
 	for {
 		log.Log("[service] init service")
 		log.Log("[service] service options: ", Service.Options())
 		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
-		if serviceType == "srv" {
-			if err := Service.Run(); err != nil {
-				log.Fatal(err)
-			}
-		} else if serviceType == "web" {
-			if err := Web.Run(); err != nil {
-				log.Fatal(err)
-			}
+		if err := Service.Run(); err != nil {
+			log.Fatal(err)
 		}
-
 		select {
 		// wait on kill signal
 		case <-ch:
@@ -205,27 +206,27 @@ func Run() {
 	}
 }
 
-//func RunWeb() {
-//	ch := make(chan os.Signal, 1)
-//	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-//
-//	for {
-//		log.Log("[service] init service")
-//		log.Log("[service] service options: ", Service.Options())
-//		log.Log("[service] server options: ", Service.Server().Options())
-//		//service start
-//		if err := Web.Run(); err != nil {
-//			log.Fatal(err)
-//		}
-//		select {
-//		// wait on kill signal
-//		case <-ch:
-//			log.Log("[service] ending service: ", Service.Server().String())
-//			return
-//		// wait on context cancel
-//		default:
-//			log.Log("[service] restart service: ", Service.Server().String())
-//			initProcess()
-//		}
-//	}
-//}
+func RunWeb() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	for {
+		log.Log("[service] init service")
+		log.Log("[service] service options: ", Service.Options())
+		log.Log("[service] server options: ", Service.Server().Options())
+		//service start
+		if err := Web.Run(); err != nil {
+			log.Fatal(err)
+		}
+		select {
+		// wait on kill signal
+		case <-ch:
+			log.Log("[service] ending service: ", Service.Server().String())
+			return
+		// wait on context cancel
+		default:
+			log.Log("[service] restart service: ", Service.Server().String())
+			initProcess()
+		}
+	}
+}

@@ -40,13 +40,16 @@ func main() {
 	//); err != nil {
 	//	log.Log(err)
 	//}
+	nebula.SetName("go.micro.api.greeter")
+
 	router := gin.New()
 	say := new(Say)
 	router.GET("/greeter", say.Anything)
+	router.GET("/greeter/test", say.Anything)
 
 	// Register Handler
 	nebula.Web.Handle("/", router)
-	nebula.Run()
+	nebula.RunWeb()
 }
 
 //func main() {
