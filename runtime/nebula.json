@@ -1,5 +1,4 @@
 {
-  "nebulaVersion": "v1.17.2",
   "configAddr": "localhost:2379",
   "registryAddr": ["localhost:2379"],
   "rabbitBrokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com",

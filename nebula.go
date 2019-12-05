@@ -50,9 +50,9 @@ func initProcess() {
 	}
 
 	log.Logf("Nebula process start %s", nebulaVersion)
-	if nebulaVersion != Conf.Get("nebulaVersion").String("unknown") {
-		log.Fatalf("Nebula config version error:%s", Conf.Get("nebulaVersion").String("unknown"))
-	}
+	//if nebulaVersion != Conf.Get("nebulaVersion").String("unknown") {
+	//	log.Fatalf("Nebula config version error:%s", Conf.Get("nebulaVersion").String("unknown"))
+	//}
 
 	//serviceType = Conf.Get("type").String("unknown")
 	appId = Conf.Get("appId").String("unknown")
