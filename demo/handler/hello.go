@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-
 	"github.com/micro/go-micro/util/log"
 
 	hello "github.com/Wall-js/nebula/demo/grpc/service/hello"
@@ -12,6 +11,9 @@ type Hello struct{}
 
 // Call is a single request handler called via client.Call or the generated client code
 func (e *Hello) Call(ctx context.Context, req *hello.Request, rsp *hello.Response) error {
+	//sdeportTest()
+	// Set arbitrary headers in context
+	log.Log(rsp.Msg)
 	log.Log("Received Hello.Call request")
 	rsp.Msg = "Hello " + req.Name
 	return nil

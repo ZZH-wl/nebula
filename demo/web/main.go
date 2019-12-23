@@ -40,7 +40,8 @@ func main() {
 	//); err != nil {
 	//	log.Log(err)
 	//}
-	nebula.SetName("go.micro.api.greeter")
+	//nebula.SetName("go.micro.api.greeter")
+	nebula.SetName("com.tradeany.api.greeter")
 
 	router := gin.New()
 	say := new(Say)

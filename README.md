@@ -1,8 +1,9 @@
 # nebula
 
 ## Version
+go版本：go 1.13 
 micro版本：micro 自建镜像1.17.2  
-nebula版本：nebula tag版本 v1.17.2
+nebula版本：nebula tag版本 v1.17.4
 
 ## Install
 > go get github.com/Wall-js/nebula  
@@ -29,17 +30,19 @@ go env -w GOPRIVATE=*.hiqio.com,*.gitlab.com,*.gitee.com //跳过私有库
 
 #### Starting
 ```
+func main() {
 	nebula.SetName("nebula.core.srv")
 	hello.RegisterHelloHandler(nebula.Service.Server(), new(handler.Hello))
 	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), new(subscriber.Hello))
 	micro.RegisterSubscriber("nebula.core.srv.hello", nebula.Service.Server(), subscriber.Handler)
 	nebula.Run()
+}
 ```
 
 #### Config
 ```
-version := nebula.Conf.Get("version").String("unknown")
-name := nebula.Conf.Get("config","name").String("unknown")
+    version := nebula.Conf.Get("version").String("unknown")
+    name := nebula.Conf.Get("config","name").String("unknown")
 ```
 
 #### Web

@@ -2,11 +2,6 @@ module github.com/Wall-js/nebula
 
 go 1.13
 
-replace (
-	github.com/hashicorp/consul => github.com/hashicorp/consul v1.5.1
-	github.com/nats-io/nats.go => github.com/nats-io/nats.go v1.8.1
-)
-
 require (
 	github.com/Azure/azure-amqp-common-go v1.1.4 // indirect
 	github.com/DataDog/zstd v1.4.0 // indirect
@@ -38,6 +33,7 @@ require (
 	github.com/uber-go/atomic v1.4.0 // indirect
 	github.com/uber/jaeger-client-go v2.15.0+incompatible // indirect
 	github.com/uber/jaeger-lib v1.5.0 // indirect
+	gitlab.hiqio.com/nebula/nebula-proto v0.0.0-20191205123234-562ae20ea78d
 	go.etcd.io/etcd v3.3.13+incompatible // indirect
 	go.mongodb.org/mongo-driver v1.0.1 // indirect
 	golang.org/x/exp v0.0.0-20190627132806-fd42eb6b336f // indirect
