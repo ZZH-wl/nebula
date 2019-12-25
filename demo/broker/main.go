@@ -69,13 +69,10 @@ func testPub() {
 }
 
 func main() {
-
 	nebula.InitRabbitBroker(nebula.RabbitBroker)
-
 	//nebula.Subscribe(nebula.RabbitBroker, topic, testSub)
 	nebula.Subscribe(nebula.RabbitBroker, topic, testSub, broker.Queue("mu.micro.book.topic.queue"))
 	go testPub()
-
 	nebula.Run()
 }
 

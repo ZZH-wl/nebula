@@ -18,12 +18,12 @@ import (
 )
 
 var (
-	nebulaVersion = "v1.17.4"
-	Conf          = config.NewConfig()
-	Service       = micro.NewService()
-	Web           = web.NewService()
-	appId         = ""
-	serviceName   = ""
+	Version     = "v1.17.5"
+	Conf        = config.NewConfig()
+	Service     = micro.NewService()
+	Web         = web.NewService()
+	appId       = ""
+	serviceName = ""
 )
 
 func SetName(name string) {
@@ -40,16 +40,16 @@ func SetName(name string) {
 }
 
 func init() {
-	initProcess()
+	InitProcess()
 }
 
-func initProcess() {
+func InitProcess() {
 	var ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(cancel); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Logf("Nebula process start %s", nebulaVersion)
+	log.Logf("Nebula process start %s", Version)
 	//if nebulaVersion != Conf.Get("nebulaVersion").String("unknown") {
 	//	log.Fatalf("Nebula config version error:%s", Conf.Get("nebulaVersion").String("unknown"))
 	//}
@@ -201,7 +201,7 @@ func Run() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			initProcess()
+			InitProcess()
 		}
 	}
 }
@@ -226,7 +226,32 @@ func RunWeb() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			initProcess()
+			InitProcess()
+		}
+	}
+}
+
+func RunProcess(process func(chan<- os.Signal) error) {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
+	for {
+		log.Log("[service] init service")
+		log.Log("[service] service options: ", Service.Options())
+		log.Log("[service] server options: ", Service.Server().Options())
+		//service start
+		if err := process(ch); err != nil {
+			log.Fatal(err)
+		}
+		select {
+		// wait on kill signal
+		case <-ch:
+			log.Log("[service] ending service: ", Service.Server().String())
+			return
+		// wait on context cancel
+		default:
+			log.Log("[service] restart service: ", Service.Server().String())
+			InitProcess()
 		}
 	}
 }
