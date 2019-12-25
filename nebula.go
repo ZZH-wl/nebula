@@ -231,7 +231,7 @@ func RunWeb() {
 	}
 }
 
-func RunProcess(process func(chan<- os.Signal) error) {
+func RunProcess(process func() error) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
@@ -240,7 +240,7 @@ func RunProcess(process func(chan<- os.Signal) error) {
 		log.Log("[service] service options: ", Service.Options())
 		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
-		if err := process(ch); err != nil {
+		if err := process(); err != nil {
 			log.Fatal(err)
 		}
 		select {
