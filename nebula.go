@@ -24,6 +24,8 @@ var (
 	Web         = web.NewService()
 	appId       = ""
 	serviceName = ""
+	ctx         context.Context
+	cancel      func()
 )
 
 func SetName(name string) {
@@ -44,8 +46,8 @@ func init() {
 }
 
 func InitProcess() {
-	var ctx, cancel = context.WithCancel(context.Background())
-	if err := loadConfig(cancel); err != nil {
+	ctx, cancel = context.WithCancel(context.Background())
+	if err := loadConfig(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -101,7 +103,7 @@ func InitProcess() {
 
 }
 
-func loadConfig(cancel func()) (err error) {
+func loadConfig() (err error) {
 	confPath := "nebula.json"
 
 	// try to use config in runtime
@@ -231,7 +233,7 @@ func RunWeb() {
 	}
 }
 
-func RunProcess(process func() error) {
+func RunProcess(process func(context.Context, context.CancelFunc) error) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
@@ -240,7 +242,7 @@ func RunProcess(process func() error) {
 		log.Log("[service] service options: ", Service.Options())
 		log.Log("[service] server options: ", Service.Server().Options())
 		//service start
-		if err := process(); err != nil {
+		if err := process(ctx, cancel); err != nil {
 			log.Fatal(err)
 		}
 		select {
