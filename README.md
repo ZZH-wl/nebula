@@ -3,7 +3,7 @@
 ## Version
 go版本：go 1.13 
 micro版本：micro 自建镜像1.17.2  
-nebula版本：nebula tag版本 v1.17.7
+nebula版本：nebula tag版本 v1.17.8
 
 ## Install
 > go get github.com/Wall-js/nebula  
