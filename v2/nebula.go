@@ -21,30 +21,46 @@ var (
 	Conf           = config.NewConfig()
 	Service        = micro.NewService()
 	Web            = web.NewService()
+	root           string
+	prefix         string
 	registryAddr   []string
 	AppId          string
 	dataCenter     string
 	configAddr     string
-	Root           string
-	Prefix         string
 	serviceVersion string
-	serviceName    = ""
+	serviceName    = "unknown"
 	ctx            context.Context
 	cancel         func()
 )
 
-func SetName(name string) {
-	serviceName = name
+func SetName(s string) {
+	serviceName = s
 	Service.Init(
-		micro.Name(name),
+		micro.Name(s),
 	)
 	if err := Web.Init(
-		web.Name(name),
+		web.Name(s),
 	); err != nil {
 		log.Fatal(err)
 	}
 }
 
+func SetAppId(s string) {
+	if AppId == "default" {
+		AppId = s
+	}
+}
+
+func SetRoot(s string) {
+	if root == "/nebula/config" {
+		root = s
+	}
+}
+func SetPrefix(s string) {
+	if prefix == "" {
+		prefix = s
+	}
+}
 func SetVersion(version string) {
 	serviceVersion = version
 }
@@ -56,8 +72,8 @@ func NewService() micro.Service {
 func init() {
 	//flag.StringVar(&configAddr, "configAddr", "", "consul Addr")
 	flag.StringVar(&dataCenter, "dataCenter", "", "dc1")
-	flag.StringVar(&Root, "Root", "/nebula/config", "/nebula/config")
-	flag.StringVar(&Prefix, "prefix", "", "")
+	flag.StringVar(&root, "Root", "/nebula/config", "/nebula/config")
+	flag.StringVar(&prefix, "prefix", "", "")
 	flag.StringVar(&AppId, "appId", "default", "default")
 	flag.StringVar(&configAddr, "configAddr", "localhost:8500", "localhost:8500")
 	flag.Parse()

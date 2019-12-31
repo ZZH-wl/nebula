@@ -11,14 +11,14 @@ func loadConfig() (err error) {
 	if dataCenter != "" {
 		consulSource = consul.NewSource(
 			consul.WithAddress(configAddr),
-			consul.WithPrefix(Root+Prefix),
+			consul.WithPrefix(root+prefix),
 			consul.StripPrefix(true),
 			consul.WithDatacenter(dataCenter),
 		)
 	} else {
 		consulSource = consul.NewSource(
 			consul.WithAddress(configAddr),
-			consul.WithPrefix(Root+Prefix),
+			consul.WithPrefix(root+prefix),
 			consul.StripPrefix(true),
 		)
 	}
