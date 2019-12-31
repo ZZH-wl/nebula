@@ -22,6 +22,8 @@ var (
 	Service        = micro.NewService()
 	Web            = web.NewService()
 	registryAddr   []string
+	appId          string
+	dataCenter     string
 	configAddr     string
 	configKey      string
 	serviceVersion string
@@ -58,8 +60,10 @@ func NewService() micro.Service {
 
 func init() {
 	//flag.StringVar(&configAddr, "configAddr", "", "consul Addr")
-	flag.StringVar(&configKey, "configKey", "", "default/nebula/nebula-core/latest")
-	flag.StringVar(&configAddr, "configAddr", "", "192.168.3.83:8500")
+	flag.StringVar(&dataCenter, "dataCenter", "", "dc1")
+	flag.StringVar(&configKey, "configKey", "", "nebula/nebula-core/latest")
+	flag.StringVar(&appId, "appId", "default", "default")
+	flag.StringVar(&configAddr, "configAddr", "192.168.5.100:8500", "192.168.5.100:8500")
 	flag.Parse()
 }
 
@@ -71,6 +75,7 @@ func CommonProcess() {
 
 	log.Logf("Nebula process start!")
 	registryAddr = Conf.Get("registryAddr").StringSlice([]string{"localhost:8500"})
+	log.Log(registryAddr)
 	reg := consul.NewRegistry(func(op *registry.Options) {
 		op.Addrs = registryAddr
 	})

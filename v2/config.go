@@ -1,34 +1,34 @@
 package nebula
 
 import (
-	"github.com/micro/go-micro/config/source/file"
+	"github.com/micro/go-micro/config/source"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/consul"
-	"os"
 )
 
 func loadConfig() (err error) {
-	confPath := "nebula.json"
-
-	// try to use config in runtime
-	if _, e := os.Stat("runtime/nebula.json"); e == nil {
-		confPath = "runtime/nebula.json"
+	var consulSource source.Source
+	if dataCenter != "" {
+		consulSource = consul.NewSource(
+			consul.WithAddress(configAddr),
+			consul.WithPrefix(configKey),
+			consul.StripPrefix(true),
+			consul.WithDatacenter(dataCenter),
+		)
+	} else {
+		consulSource = consul.NewSource(
+			consul.WithAddress(configAddr),
+			consul.WithPrefix(configKey),
+			consul.StripPrefix(true),
+		)
 	}
 
-	if err := Conf.Load(file.NewSource(
-		file.WithPath(confPath),
-	)); err != nil {
-		log.Fatalf("[loadConfig] load error，%s", err)
+	if err := Conf.Load(consulSource); err != nil {
+		log.Logf("[loadConfig] load error，%s", err.Error())
 		return err
 	}
-
-	configAddr = Conf.Get("configAddr").String(":8500")
-
-	consulSource := consul.NewSource(
-		consul.WithAddress(configAddr),
-		consul.WithPrefix(configKey),
-		consul.StripPrefix(true),
-	)
+	log.Log(Conf.Map())
+	log.Log(Conf.Get("default", "configAddr").String("none"))
 
 	go func() {
 		// watch changes
@@ -45,27 +45,20 @@ func loadConfig() (err error) {
 		log.Logf("[loadConfig] file change， %s", string(v.Bytes()))
 		cancel()
 	}()
-
-	if err := Conf.Load(consulSource); err != nil {
-		log.Logf("[loadConfig] load error，%s", err.Error())
-		//return err
-		return nil
-	}
-
-	go func() {
-		// watch etcd changes
-		watcher, err := consulSource.Watch()
-		if err != nil {
-			log.Fatalf("[loadConfig] start watching etcd error，%s", err)
-			return
-		}
-		v, err := watcher.Next()
-		if err != nil {
-			log.Fatalf("[loadConfig] watch etcd error，%s", err)
-			return
-		}
-		log.Logf("[loadConfig] etcd change， %s", string(v.Data))
-		cancel()
-	}()
+	//go func() {
+	//	// watch etcd changes
+	//	watcher, err := consulSource.Watch()
+	//	if err != nil {
+	//		log.Fatalf("[loadConfig] start watching consul error，%s", err)
+	//		return
+	//	}
+	//	v, err := watcher.Next()
+	//	if err != nil {
+	//		log.Fatalf("[loadConfig] watch consul error，%s", err)
+	//		return
+	//	}
+	//	log.Logf("[loadConfig] consul change， %s", string(v.Data))
+	//	cancel()
+	//}()
 	return
 }
