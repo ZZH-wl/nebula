@@ -1,14 +1,7 @@
 {
-  "configAddr": "localhost:2379",
-  "registryAddr": ["localhost:2379"],
-  "rabbitBrokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com",
-  "cluster": "default",
-  "namespace": "nebula",
-  "type": "srv",
-  "system": "nebula-core",
-  "version": "latest",
-  "appId": "",
-  "config": {
-    "name": "test"
-  }
+  "configAddr": "192.168.3.83:8500",
+  "registryAddr": [
+    "192.168.3.83:8500"
+  ],
+  "rabbitBrokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com"
 }
