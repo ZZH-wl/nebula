@@ -25,7 +25,8 @@ var (
 	AppId          string
 	dataCenter     string
 	configAddr     string
-	configKey      string
+	Root           string
+	Prefix         string
 	serviceVersion string
 	serviceName    = ""
 	ctx            context.Context
@@ -44,12 +45,6 @@ func SetName(name string) {
 	}
 }
 
-func SetConfigKey(key string) {
-	if configKey == "config/" {
-		configKey = key
-	}
-}
-
 func SetVersion(version string) {
 	serviceVersion = version
 }
@@ -61,7 +56,8 @@ func NewService() micro.Service {
 func init() {
 	//flag.StringVar(&configAddr, "configAddr", "", "consul Addr")
 	flag.StringVar(&dataCenter, "dataCenter", "", "dc1")
-	flag.StringVar(&configKey, "configKey", "/nebula/config", "/nebula/config")
+	flag.StringVar(&Root, "Root", "/nebula/config", "/nebula/config")
+	flag.StringVar(&Prefix, "prefix", "", "")
 	flag.StringVar(&AppId, "appId", "default", "default")
 	flag.StringVar(&configAddr, "configAddr", "localhost:8500", "localhost:8500")
 	flag.Parse()
@@ -75,7 +71,7 @@ func CommonProcess() {
 		log.Fatal(err)
 	}
 
-	registryAddr = Conf.Get(AppId, "registryAddr").StringSlice([]string{"localhost:8500"})
+	registryAddr = Conf.Get("default", "registryAddr").StringSlice([]string{"localhost:8500"})
 
 	reg := consul.NewRegistry(func(op *registry.Options) {
 		op.Addrs = registryAddr
