@@ -27,8 +27,7 @@ func loadConfig() (err error) {
 		log.Logf("[loadConfig] load error，%s", err.Error())
 		return err
 	}
-	log.Log(Conf.Map())
-	log.Log(Conf.Get("default", "configAddr").String("none"))
+	log.Logf("Config %s", string(Conf.Bytes()))
 
 	go func() {
 		// watch changes

@@ -22,7 +22,7 @@ var (
 	Service        = micro.NewService()
 	Web            = web.NewService()
 	registryAddr   []string
-	appId          string
+	AppId          string
 	dataCenter     string
 	configAddr     string
 	configKey      string
@@ -45,7 +45,7 @@ func SetName(name string) {
 }
 
 func SetConfigKey(key string) {
-	if configKey == "" {
+	if configKey == "config/" {
 		configKey = key
 	}
 }
@@ -61,21 +61,22 @@ func NewService() micro.Service {
 func init() {
 	//flag.StringVar(&configAddr, "configAddr", "", "consul Addr")
 	flag.StringVar(&dataCenter, "dataCenter", "", "dc1")
-	flag.StringVar(&configKey, "configKey", "", "nebula/nebula-core/latest")
-	flag.StringVar(&appId, "appId", "default", "default")
-	flag.StringVar(&configAddr, "configAddr", "192.168.5.100:8500", "192.168.5.100:8500")
+	flag.StringVar(&configKey, "configKey", "/nebula/config", "/nebula/config")
+	flag.StringVar(&AppId, "appId", "default", "default")
+	flag.StringVar(&configAddr, "configAddr", "localhost:8500", "localhost:8500")
 	flag.Parse()
 }
 
 func CommonProcess() {
+	log.Logf("-----Nebula Process Start!-----")
+
 	ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Logf("Nebula process start!")
-	registryAddr = Conf.Get("registryAddr").StringSlice([]string{"localhost:8500"})
-	log.Log(registryAddr)
+	registryAddr = Conf.Get(AppId, "registryAddr").StringSlice([]string{"localhost:8500"})
+
 	reg := consul.NewRegistry(func(op *registry.Options) {
 		op.Addrs = registryAddr
 	})
@@ -118,13 +119,12 @@ func CommonProcess() {
 }
 
 func Run() {
-	CommonProcess()
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+
 	for {
-		log.Log("[service] init service")
-		log.Log("[service] service options: ", Service.Options())
-		log.Log("[service] server options: ", Service.Server().Options())
+		CommonProcess()
+
 		//service start
 		if err := Service.Run(); err != nil {
 			log.Fatal(err)
@@ -137,20 +137,16 @@ func Run() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			CommonProcess()
 		}
 	}
 }
 
 func RunWeb() {
-	CommonProcess()
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	for {
-		log.Log("[service] init service")
-		log.Log("[service] service options: ", Service.Options())
-		log.Log("[service] server options: ", Service.Server().Options())
+		CommonProcess()
 		//service start
 		if err := Web.Run(); err != nil {
 			log.Fatal(err)
@@ -163,7 +159,6 @@ func RunWeb() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			CommonProcess()
 		}
 	}
 }
@@ -173,9 +168,8 @@ func RunProcess(process func(context.Context, context.CancelFunc) error) {
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	for {
-		log.Log("[service] init service")
-		log.Log("[service] service options: ", Service.Options())
-		log.Log("[service] server options: ", Service.Server().Options())
+		CommonProcess()
+
 		//service start
 		if err := process(ctx, cancel); err != nil {
 			log.Fatal(err)
@@ -188,7 +182,6 @@ func RunProcess(process func(context.Context, context.CancelFunc) error) {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			CommonProcess()
 		}
 	}
 }

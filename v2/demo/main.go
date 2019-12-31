@@ -8,7 +8,7 @@ import (
 
 func main() {
 	nebula.SetName("com.nebula.test")
-	nebula.SetConfigKey("nebula/nebula-core/latest")
+	//nebula.SetConfigKey("nebula/nebula-core/latest")
 	hello.RegisterHelloHandler(nebula.Service.Server(), new(handler.Hello))
 	nebula.Run()
 }
