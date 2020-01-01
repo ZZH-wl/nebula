@@ -2,7 +2,7 @@ package nebula
 
 import (
 	"context"
-	"flag"
+	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/config"
 	"github.com/micro/go-micro/registry"
@@ -19,14 +19,14 @@ import (
 
 var (
 	Conf           = config.NewConfig()
-	Service        = micro.NewService()
+	Service        micro.Service
 	Web            = web.NewService()
 	root           string
 	prefix         string
 	registryAddr   []string
 	AppId          string
 	dataCenter     string
-	configAddr     string
+	confAddr       string
 	serviceVersion string
 	serviceName    = "unknown"
 	ctx            context.Context
@@ -56,32 +56,58 @@ func SetRoot(s string) {
 		root = s
 	}
 }
+
 func SetPrefix(s string) {
 	if prefix == "" {
 		prefix = s
 	}
 }
+
 func SetVersion(version string) {
 	serviceVersion = version
 }
 
-func NewService() micro.Service {
-	return micro.NewService()
-}
-
 func init() {
-	//flag.StringVar(&configAddr, "configAddr", "", "consul Addr")
-	flag.StringVar(&dataCenter, "dataCenter", "", "dc1")
-	flag.StringVar(&root, "Root", "/nebula/config", "/nebula/config")
-	flag.StringVar(&prefix, "prefix", "", "")
-	flag.StringVar(&AppId, "appId", "default", "default")
-	flag.StringVar(&configAddr, "configAddr", "localhost:8500", "localhost:8500")
-	flag.Parse()
+	Service = micro.NewService(
+		micro.Flags(
+			cli.StringFlag{
+				Name:  "dataCenter",
+				Usage: "dataCenter dc1",
+				Value: "",
+			},
+			cli.StringFlag{
+				Name:  "root",
+				Usage: "root /nebula/config",
+				Value: "/nebula/config",
+			},
+			cli.StringFlag{
+				Name:  "confAddr",
+				Usage: "confAddr localhost:8500",
+				Value: "localhost:8500",
+			},
+			cli.StringFlag{
+				Name:  "prefix",
+				Usage: "prefix /test",
+				Value: "",
+			},
+			cli.StringFlag{
+				Name:  "appId",
+				Usage: "appId default",
+				Value: "default",
+			},
+		),
+		micro.Action(func(c *cli.Context) {
+			dataCenter = c.String("dataCenter")
+			root = c.String("root")
+			confAddr = c.String("confAddr")
+			prefix = c.String("prefix")
+			AppId = c.String("appId")
+		}),
+	)
 }
 
 func CommonProcess() {
 	log.Logf("-----Nebula Process Start!-----")
-
 	ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(); err != nil {
 		log.Fatal(err)
@@ -120,8 +146,10 @@ func CommonProcess() {
 
 	if err := Web.Init(
 		web.Name(serviceName),
-		web.Context(ctx),
+		// Alternative Options
 		web.Registry(reg),
+		web.MicroService(Service),
+		web.Context(ctx),
 		web.Version(serviceVersion),
 		web.RegisterTTL(time.Second*30),
 		web.RegisterInterval(time.Second*15),
