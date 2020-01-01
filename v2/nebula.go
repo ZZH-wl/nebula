@@ -73,11 +73,6 @@ func init() {
 				Value: "localhost:8500",
 			},
 			cli.StringFlag{
-				Name:  "prefix",
-				Usage: "prefix /test",
-				Value: "",
-			},
-			cli.StringFlag{
 				Name:  "appId",
 				Usage: "appId default",
 				Value: "default",
