@@ -2,6 +2,7 @@ package nebula
 
 import (
 	"github.com/micro/go-micro/config/source"
+	"github.com/micro/go-micro/config/source/file"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/consul"
 )
@@ -11,18 +12,21 @@ func loadConfig() (err error) {
 	if dataCenter != "" {
 		consulSource = consul.NewSource(
 			consul.WithAddress(confAddr),
-			consul.WithPrefix(root+prefix),
+			consul.WithPrefix(prefix),
 			consul.StripPrefix(true),
 			consul.WithDatacenter(dataCenter),
 		)
 	} else {
 		consulSource = consul.NewSource(
 			consul.WithAddress(confAddr),
-			consul.WithPrefix(root+prefix),
+			consul.WithPrefix(prefix),
 			consul.StripPrefix(true),
 		)
 	}
-
+	if err := Conf.Load(file.NewSource(file.WithPath("runtime/nebula.json"))); err != nil {
+		log.Logf("[loadConfig] load error，%s", err.Error())
+		return err
+	}
 	if err := Conf.Load(consulSource); err != nil {
 		log.Logf("[loadConfig] load error，%s", err.Error())
 		return err
@@ -44,6 +48,7 @@ func loadConfig() (err error) {
 		log.Logf("[loadConfig] file change， %s", string(v.Bytes()))
 		cancel()
 	}()
+
 	//go func() {
 	//	// watch etcd changes
 	//	watcher, err := consulSource.Watch()

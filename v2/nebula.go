@@ -21,7 +21,6 @@ var (
 	Conf           = config.NewConfig()
 	Service        micro.Service
 	Web            = web.NewService()
-	root           string
 	prefix         string
 	registryAddr   []string
 	AppId          string
@@ -45,20 +44,8 @@ func SetName(s string) {
 	}
 }
 
-func SetAppId(s string) {
-	if AppId == "default" {
-		AppId = s
-	}
-}
-
-func SetRoot(s string) {
-	if root == "/nebula/config" {
-		root = s
-	}
-}
-
 func SetPrefix(s string) {
-	if prefix == "" {
+	if prefix == "/nebula/config" {
 		prefix = s
 	}
 }
@@ -76,8 +63,8 @@ func init() {
 				Value: "",
 			},
 			cli.StringFlag{
-				Name:  "root",
-				Usage: "root /nebula/config",
+				Name:  "prefix",
+				Usage: "prefix /nebula/config",
 				Value: "/nebula/config",
 			},
 			cli.StringFlag{
@@ -98,9 +85,8 @@ func init() {
 		),
 		micro.Action(func(c *cli.Context) {
 			dataCenter = c.String("dataCenter")
-			root = c.String("root")
-			confAddr = c.String("confAddr")
 			prefix = c.String("prefix")
+			confAddr = c.String("confAddr")
 			AppId = c.String("appId")
 		}),
 	)

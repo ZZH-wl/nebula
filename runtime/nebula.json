@@ -1,8 +1,9 @@
 {
-  "configAddr": "192.168.5.100:8500",
-  "registryAddr": [
-    "192.168.5.100:8500"
-  ],
-  "rabbitBrokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com",
-  "name": "123"
+  "default": {
+    "registryAddr": [
+      "192.168.5.100:8500"
+    ],
+    "rabbitBrokerAddr": "amqp://ceshi:ceshi@amqp0.hiqio.com",
+    "name": "123"
+  }
 }
