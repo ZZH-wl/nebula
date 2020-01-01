@@ -5,6 +5,7 @@ import (
 	"github.com/micro/go-micro/config/source/file"
 	"github.com/micro/go-micro/util/log"
 	"github.com/micro/go-plugins/config/source/consul"
+	"os"
 )
 
 func loadConfig() (err error) {
@@ -23,10 +24,13 @@ func loadConfig() (err error) {
 			consul.StripPrefix(true),
 		)
 	}
-	if err := Conf.Load(file.NewSource(file.WithPath("runtime/nebula.json"))); err != nil {
-		log.Logf("[loadConfig] load error，%s", err.Error())
-		return err
+	if _, e := os.Stat("runtime/nebula.json"); e == nil {
+		if err := Conf.Load(file.NewSource(file.WithPath("runtime/nebula.json"))); err != nil {
+			log.Logf("[loadConfig] load error，%s", err.Error())
+			return err
+		}
 	}
+
 	if err := Conf.Load(consulSource); err != nil {
 		log.Logf("[loadConfig] load error，%s", err.Error())
 		return err
