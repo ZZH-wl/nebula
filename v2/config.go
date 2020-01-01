@@ -24,6 +24,7 @@ func loadConfig() (err error) {
 			consul.StripPrefix(true),
 		)
 	}
+
 	if _, e := os.Stat("runtime/nebula.json"); e == nil {
 		if err := Conf.Load(file.NewSource(file.WithPath("runtime/nebula.json"))); err != nil {
 			log.Logf("[loadConfig] load error，%s", err.Error())
@@ -53,20 +54,5 @@ func loadConfig() (err error) {
 		cancel()
 	}()
 
-	//go func() {
-	//	// watch etcd changes
-	//	watcher, err := consulSource.Watch()
-	//	if err != nil {
-	//		log.Fatalf("[loadConfig] start watching consul error，%s", err)
-	//		return
-	//	}
-	//	v, err := watcher.Next()
-	//	if err != nil {
-	//		log.Fatalf("[loadConfig] watch consul error，%s", err)
-	//		return
-	//	}
-	//	log.Logf("[loadConfig] consul change， %s", string(v.Data))
-	//	cancel()
-	//}()
 	return
 }
