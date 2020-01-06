@@ -35,6 +35,7 @@ func loadConfig() (err error) {
 	if err := Conf.Load(consulSource); err != nil {
 		log.Logf("[loadConfig] load error，%s", err.Error())
 	}
+	log.Logf("Config Address %s", confAddr)
 	log.Logf("Config %s", string(Conf.Bytes()))
 
 	go func() {
