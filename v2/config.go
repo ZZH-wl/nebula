@@ -8,33 +8,38 @@ import (
 	"os"
 )
 
-func loadConfig() (err error) {
-	var consulSource source.Source
+func setConsulSource(prefix string) source.Source {
 	if dataCenter != "" {
-		consulSource = consul.NewSource(
+		return consul.NewSource(
 			consul.WithAddress(confAddr),
 			consul.WithPrefix(prefix),
 			consul.StripPrefix(true),
 			consul.WithDatacenter(dataCenter),
 		)
 	} else {
-		consulSource = consul.NewSource(
+		return consul.NewSource(
 			consul.WithAddress(confAddr),
 			consul.WithPrefix(prefix),
 			consul.StripPrefix(true),
 		)
 	}
+}
 
+func loadConfig() (err error) {
 	if _, e := os.Stat("runtime/nebula.json"); e == nil {
 		if err := Conf.Load(file.NewSource(file.WithPath("runtime/nebula.json"))); err != nil {
 			log.Logf("[loadConfig] load error，%s", err.Error())
 			return err
 		}
 	}
-
-	if err := Conf.Load(consulSource); err != nil {
-		log.Logf("[loadConfig] load error，%s", err.Error())
+	AddPrefix(defaultPrefix)
+	for _, v := range PrefixSlice {
+		consulSource := setConsulSource(v)
+		if err := Conf.Load(consulSource); err != nil {
+			log.Logf("[loadConfig] load error，%s", err.Error())
+		}
 	}
+
 	log.Logf("Config Address %s", confAddr)
 	log.Logf("Config %s", string(Conf.Bytes()))
 
