@@ -24,6 +24,7 @@ var (
 	prefix         string
 	registryAddr   []string
 	AppId          string
+	AfterConfig    = func() error { return nil }
 	dataCenter     string
 	confAddr       string
 	serviceVersion string
@@ -91,6 +92,10 @@ func CommonProcess() {
 	log.Logf("-----Nebula Process Start!-----")
 	ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := AfterConfig(); err != nil {
 		log.Fatal(err)
 	}
 
