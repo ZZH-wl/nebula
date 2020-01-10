@@ -21,7 +21,7 @@ var (
 	Conf           = config.NewConfig()
 	Service        micro.Service
 	Web            = web.NewService()
-	defaultPrefix  string
+	DefaultPrefix  string
 	PrefixSlice    []string
 	registryAddr   []string
 	AppId          string
@@ -80,7 +80,7 @@ func init() {
 		),
 		micro.Action(func(c *cli.Context) {
 			dataCenter = c.String("dataCenter")
-			defaultPrefix = c.String("prefix")
+			DefaultPrefix = c.String("prefix")
 			confAddr = c.String("confAddr")
 			AppId = c.String("appId")
 		}),

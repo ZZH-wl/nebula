@@ -32,7 +32,7 @@ func loadConfig() (err error) {
 			return err
 		}
 	}
-	AddPrefix(defaultPrefix)
+	AddPrefix(DefaultPrefix)
 	for _, v := range PrefixSlice {
 		consulSource := setConsulSource(v)
 		if err := Conf.Load(consulSource); err != nil {
