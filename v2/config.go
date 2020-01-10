@@ -32,6 +32,7 @@ func loadConfig() (err error) {
 			return err
 		}
 	}
+
 	AddPrefix(DefaultPrefix)
 	for _, v := range PrefixSlice {
 		consulSource := setConsulSource(v)
