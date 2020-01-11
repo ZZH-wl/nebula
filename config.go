@@ -41,6 +41,7 @@ func loadConfig() (err error) {
 		}
 	}
 
+	log.Logf("Prefix %s", PrefixSlice)
 	log.Logf("Config Address %s", confAddr)
 	log.Logf("Config %s", string(Conf.Bytes()))
 

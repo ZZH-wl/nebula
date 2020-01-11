@@ -18,20 +18,20 @@ import (
 )
 
 var (
-	Conf           = config.NewConfig()
-	Service        micro.Service
-	Web            = web.NewService()
-	DefaultPrefix  string
-	PrefixSlice    []string
-	registryAddr   []string
-	AppId          string
-	AfterConfig    = func() error { return nil }
-	dataCenter     string
-	confAddr       string
-	serviceVersion string
-	serviceName    = "unknown"
-	ctx            context.Context
-	cancel         func()
+	Conf               = config.NewConfig()
+	Service            micro.Service
+	Web                = web.NewService()
+	DefaultPrefix      string
+	PrefixSlice        []string
+	registryAddr       []string
+	AppId              string
+	dataCenter         string
+	confAddr           string
+	serviceVersion     string
+	serviceName        = "unknown"
+	ctx                context.Context
+	cancel             func()
+	beforeStartHandles []func()
 )
 
 func SetName(s string) {
@@ -43,6 +43,18 @@ func SetName(s string) {
 		web.Name(s),
 	); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func beforeStart() {
+	for _, o := range beforeStartHandles {
+		o()
+	}
+}
+
+func BeforeStart(f ...func()) {
+	for _, o := range f {
+		beforeStartHandles = append(beforeStartHandles, o)
 	}
 }
 
@@ -91,10 +103,6 @@ func CommonProcess() {
 	log.Logf("-----Nebula Process Start!-----")
 	ctx, cancel = context.WithCancel(context.Background())
 	if err := loadConfig(); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := AfterConfig(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -149,6 +157,7 @@ func Run() {
 
 	for {
 		CommonProcess()
+		beforeStart()
 
 		//service start
 		if err := Service.Run(); err != nil {
@@ -162,6 +171,7 @@ func Run() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
+
 		}
 	}
 }
@@ -172,6 +182,8 @@ func RunWeb() {
 
 	for {
 		CommonProcess()
+		beforeStart()
+
 		//service start
 		if err := Web.Run(); err != nil {
 			log.Fatal(err)
@@ -184,6 +196,8 @@ func RunWeb() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
+			CommonProcess()
+
 		}
 	}
 }
@@ -194,6 +208,7 @@ func RunProcess(process func(context.Context, context.CancelFunc) error) {
 
 	for {
 		CommonProcess()
+		beforeStart()
 
 		//service start
 		if err := process(ctx, cancel); err != nil {
