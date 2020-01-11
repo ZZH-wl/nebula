@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	nebula.SetName("com.nebula.test")
 	nebula.AddPrefix("/nebula/test")
 	//nebula.SetConfigKey("nebula/nebula-core/latest")
