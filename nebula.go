@@ -189,8 +189,6 @@ func RunWeb() {
 		// wait on context cancel
 		default:
 			log.Log("[service] restart service: ", Service.Server().String())
-			CommonProcess()
-
 		}
 	}
 }

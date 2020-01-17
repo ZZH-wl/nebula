@@ -15,5 +15,5 @@ func main() {
 	nebula.BeforeStart(
 		func() { fmt.Println("666") },
 	)
-	nebula.Run()
+	nebula.RunWeb()
 }
