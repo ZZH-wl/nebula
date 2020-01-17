@@ -36,14 +36,6 @@ var (
 
 func SetName(s string) {
 	serviceName = s
-	Service.Init(
-		micro.Name(s),
-	)
-	if err := Web.Init(
-		web.Name(s),
-	); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func beforeStart() {
