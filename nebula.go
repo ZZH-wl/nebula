@@ -80,6 +80,11 @@ func BeforeStart(f ...func()) {
 }
 
 func AddPrefix(s string) {
+	for _, v := range PrefixSlice {
+		if v == s {
+			return
+		}
+	}
 	PrefixSlice = append(PrefixSlice, s)
 }
 
