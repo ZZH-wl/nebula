@@ -18,8 +18,37 @@ import (
 )
 
 var (
-	Conf               = config.NewConfig()
-	Service            micro.Service
+	Conf    = config.NewConfig()
+	Service = micro.NewService(
+		micro.Flags(
+			cli.StringFlag{
+				Name:  "dataCenter",
+				Usage: "dataCenter dc1",
+				Value: "",
+			},
+			cli.StringFlag{
+				Name:  "prefix",
+				Usage: "prefix /nebula/config",
+				Value: "/nebula/config",
+			},
+			cli.StringFlag{
+				Name:  "confAddr",
+				Usage: "confAddr localhost:8500",
+				Value: "localhost:8500",
+			},
+			cli.StringFlag{
+				Name:  "appId",
+				Usage: "appId default",
+				Value: "default",
+			},
+		),
+		micro.Action(func(c *cli.Context) {
+			dataCenter = c.String("dataCenter")
+			DefaultPrefix = c.String("prefix")
+			confAddr = c.String("confAddr")
+			AppId = c.String("appId")
+		}),
+	)
 	Web                web.Service
 	DefaultPrefix      string
 	PrefixSlice        []string
@@ -59,36 +88,7 @@ func SetVersion(version string) {
 }
 
 func init() {
-	Service = micro.NewService(
-		micro.Flags(
-			cli.StringFlag{
-				Name:  "dataCenter",
-				Usage: "dataCenter dc1",
-				Value: "",
-			},
-			cli.StringFlag{
-				Name:  "prefix",
-				Usage: "prefix /nebula/config",
-				Value: "/nebula/config",
-			},
-			cli.StringFlag{
-				Name:  "confAddr",
-				Usage: "confAddr localhost:8500",
-				Value: "localhost:8500",
-			},
-			cli.StringFlag{
-				Name:  "appId",
-				Usage: "appId default",
-				Value: "default",
-			},
-		),
-		micro.Action(func(c *cli.Context) {
-			dataCenter = c.String("dataCenter")
-			DefaultPrefix = c.String("prefix")
-			confAddr = c.String("confAddr")
-			AppId = c.String("appId")
-		}),
-	)
+	Service.Init()
 }
 
 func CommonProcess() {
@@ -113,6 +113,7 @@ func CommonProcess() {
 		log.Fatal(err)
 	}
 
+	Web = web.NewService()
 	if err := Web.Options().Service.Server().Init(
 		server.Wait(wg),
 	); err != nil {
@@ -129,7 +130,6 @@ func CommonProcess() {
 		micro.RegisterInterval(time.Second*15),
 	)
 
-	//Web = web.NewService()
 	if err := Web.Init(
 		web.Name(serviceName),
 		// Alternative Options
