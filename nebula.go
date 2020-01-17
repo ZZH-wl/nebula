@@ -20,7 +20,7 @@ import (
 var (
 	Conf               = config.NewConfig()
 	Service            micro.Service
-	Web                = web.NewService()
+	Web                web.Service
 	DefaultPrefix      string
 	PrefixSlice        []string
 	registryAddr       []string
@@ -137,6 +137,7 @@ func CommonProcess() {
 		micro.RegisterInterval(time.Second*15),
 	)
 
+	//Web = web.NewService()
 	if err := Web.Init(
 		web.Name(serviceName),
 		// Alternative Options
