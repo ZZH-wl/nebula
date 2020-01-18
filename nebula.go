@@ -28,8 +28,8 @@ var (
 			},
 			cli.StringFlag{
 				Name:  "prefix",
-				Usage: "prefix /nebula",
-				Value: "/nebula",
+				Usage: "prefix /nebula/",
+				Value: "/nebula/",
 			},
 			cli.StringFlag{
 				Name:  "confAddr",
