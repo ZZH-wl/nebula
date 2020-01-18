@@ -28,8 +28,8 @@ var (
 			},
 			cli.StringFlag{
 				Name:  "prefix",
-				Usage: "prefix /nebula/config",
-				Value: "/nebula/config",
+				Usage: "prefix /nebula",
+				Value: "/nebula",
 			},
 			cli.StringFlag{
 				Name:  "confAddr",
@@ -41,12 +41,17 @@ var (
 				Usage: "appId default",
 				Value: "default",
 			},
+			cli.BoolFlag{
+				Name:  "t",
+				Usage: "--t",
+			},
 		),
 		micro.Action(func(c *cli.Context) {
 			dataCenter = c.String("dataCenter")
 			DefaultPrefix = c.String("prefix")
 			confAddr = c.String("confAddr")
 			AppId = c.String("appId")
+			test = c.Bool("t")
 		}),
 	)
 	Web                web.Service
@@ -57,6 +62,7 @@ var (
 	dataCenter         string
 	confAddr           string
 	serviceVersion     string
+	test               bool
 	serviceName        = "unknown"
 	ctx                context.Context
 	cancel             func()
@@ -80,6 +86,15 @@ func BeforeStart(f ...func()) {
 }
 
 func AddPrefix(s string) {
+	if test {
+		switch s[0:1] {
+		case "/":
+			s = "test" + s
+		default:
+			s = "test/" + s
+		}
+	}
+
 	for _, v := range PrefixSlice {
 		if v == s {
 			return
@@ -99,6 +114,9 @@ func init() {
 func CommonProcess() {
 	log.Logf("-----Nebula Process Start!-----")
 	ctx, cancel = context.WithCancel(context.Background())
+	if test {
+		log.Log("Run With Test Mode...")
+	}
 	if err := loadConfig(); err != nil {
 		log.Fatal(err)
 	}
