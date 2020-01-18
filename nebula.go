@@ -89,9 +89,9 @@ func AddPrefix(s string) {
 	if test {
 		switch s[0:1] {
 		case "/":
-			s = "test" + s
+			s = "TEST" + s
 		default:
-			s = "test/" + s
+			s = "TEST/" + s
 		}
 	}
 
