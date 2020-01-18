@@ -43,7 +43,7 @@ var (
 			},
 			cli.BoolFlag{
 				Name:  "t",
-				Usage: "--t",
+				Usage: "-t",
 			},
 		),
 		micro.Action(func(c *cli.Context) {
